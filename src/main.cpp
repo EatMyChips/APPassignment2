@@ -13,13 +13,12 @@ int main()
     std::vector <std::string> parameters;
     std::string userCommand;
     std::pmr::vector<Account*> accounts;
-    std::pmr::vector<Savings*> saveAccounts;
-    // you may also want to store a collection of opened accounts here
 
     std::cout << "~~~ Welcome to LincBank! ~~~" << std::endl;
 
     while (userCommand != "exit")
     {
+        Account* stored;
         parameters.clear(); // clear ready for next command
         std::cout << std::endl << ">>>";
 
@@ -41,7 +40,14 @@ int main()
 
         if (command.compare("options") == 0)
         {
-            // display the various commands to the user
+            std::cout << "open type initial_deposit: open a current (1), savings (2) or ISA (3) account" << std::endl;
+            std::cout << "view [index]: view balance and recent transactions" << std::endl;
+            std::cout << "withdraw [index] sum: withdraw funds from most recently viewed account or index of account" << std::endl;
+            std::cout << "deposit [index] sum: deposit funds into most recently viewed account or index of account" << std::endl;
+            std::cout << "transfer src dest sum: transfer funds between accounts" << std::endl;
+            std::cout << "project [index] years: project balance forward in time of most recently viewed account or index of account" << std::endl;
+            std::cout << "exit: close this application" << std::endl;
+            std::cout << "options: view these options again" << std::endl;
         }
         else if (command.compare("open") == 0) {
             Account* account = nullptr;
@@ -49,14 +55,15 @@ int main()
                 switch (stoi(parameters[1])) {
                     case 1:
                         account = new Current(stof(parameters[2]));
+                        stored = account;
                         break;
                     case 2:
                         account = new Savings(stof(parameters[2]), false);
-                        //saveAccounts.push_back(account);
+                        stored = account;
                         break;
                     case 3:
                         account = new Savings(stof(parameters[2]), true);
-                        //saveAccounts.push_back(account);
+                        stored = account;
                         break;
                 }
                 accounts.push_back(account);
@@ -69,6 +76,7 @@ int main()
         {
             if(parameters.size() > 1) {
                 std::cout << accounts[stof(parameters[1]) - 1]->toString();
+                stored = accounts[stof(parameters[1]) - 1];
             }
             else{
                 for(Account* a : accounts) {
@@ -79,7 +87,13 @@ int main()
         else if (command.compare("withdraw") == 0)
         {
             try {
-                accounts[stof(parameters[1]) - 1]->withdraw(stof(parameters[2]), "withdraw");
+                if(parameters.size() > 2) {
+                    accounts[stof(parameters[1]) - 1]->withdraw(stof(parameters[2]), "withdraw");
+                    stored = accounts[stof(parameters[1]) - 1];
+                }
+                else {
+                    stored->withdraw(stof(parameters[1]), "withdraw");
+                }
             }
             catch (BalanceTooLow) {
                 std::cout << "not enough money in account\n";
@@ -87,7 +101,13 @@ int main()
         }
         else if (command.compare("deposit") == 0)
         {
-            accounts[stof(parameters[1]) - 1]->deposit(stof(parameters[2]), "deposit");
+            if(parameters.size() > 2) {
+                accounts[stof(parameters[1]) - 1]->deposit(stof(parameters[2]), "deposit");
+                stored = accounts[stof(parameters[1]) - 1];
+            }
+            else {
+                stored->deposit(stof(parameters[1]), "deposit");
+            }
         }
         else if (command.compare("transfer") == 0)
         {
@@ -106,7 +126,20 @@ int main()
         }
         else if (command.compare("project") == 0)
         {
-            //accounts[stof(parameters[1])]->computeInterest();
+            Savings* save;
+            if(parameters.size() == 3) {
+                save = dynamic_cast<Savings*>(accounts[stof(parameters[1]) - 1]);
+            }
+            else {
+                save = dynamic_cast<Savings*>(stored);
+            }
+
+            if (save == nullptr) {
+                std::cout << "Account type does not have interest";
+            }
+            else {
+                std::cout << save->computeInterest(stof(parameters[2]));
+            }
         }
         else if (command.compare("search") == 0)
         {

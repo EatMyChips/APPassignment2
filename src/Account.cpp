@@ -1,5 +1,6 @@
 #include "Account.h"
 
+// used to search for transaction based on transaction ammount
 void Account::search(int transactionAmount) {
     std::stringstream ss;
     for (Transaction* t : history) {
