@@ -8,6 +8,16 @@
 #include "Savings.h"
 #include "InterestEarning.h"
 
+//Custom error exception for opening an account that already exists when only one is permitted
+class TooManyOfType : public std::exception {
+public:
+    std::string message;
+
+    explicit TooManyOfType(std::string message){
+        this->message = "too many of account type: " + message;
+    }
+};
+
 int main()
 {
     std::vector <std::string> parameters;
@@ -54,6 +64,12 @@ int main()
             try {
                 switch (stoi(parameters[1])) {
                     case 1:
+                        for (Account* account : accounts) {
+                            Current* current = static_cast<Current*>(account);
+                            if (current != nullptr) {
+                                throw(TooManyOfType("current"));
+                            }
+                        }
                         account = new Current(stof(parameters[2]));
                         stored = account;
                         break;
@@ -62,14 +78,23 @@ int main()
                         stored = account;
                         break;
                     case 3:
+                        for (Account* account : accounts) {
+                            Savings* save = static_cast<Savings*>(account);
+                            if (save != nullptr && save->isa) {
+                                throw(TooManyOfType("ISA"));
+                            }
+                        }
                         account = new Savings(stof(parameters[2]), true);
                         stored = account;
                         break;
                 }
                 accounts.push_back(account);
             }
-            catch (BalanceTooLow) {
-                std::cout << "failed to make account\n";
+            catch (OpenBalanceTooLow) {
+                std::cout << "Failed to make account: ISA must have 1000 pound or more to open" << std::endl;
+            }
+            catch (TooManyOfType error) {
+                std::cout << error.message << std::endl;
             }
         }
         else if (command.compare("view") == 0)
@@ -117,12 +142,13 @@ int main()
             ssFrom << "transfer from account " << parameters[1];
             try {
                 accounts[stof(parameters[1]) - 1]->withdraw(stof(parameters[3]), ssTo.str());
+                accounts[stof(parameters[2]) - 1]->deposit(stof(parameters[3]), ssFrom.str());
             }
             catch (BalanceTooLow) {
                 std::cout << "not enough money in account";
             }
 
-            accounts[stof(parameters[2]) - 1]->deposit(stof(parameters[3]), ssFrom.str());
+
         }
         else if (command.compare("project") == 0)
         {
@@ -135,10 +161,10 @@ int main()
             }
 
             if (save == nullptr) {
-                std::cout << "Account type does not have interest";
+                std::cout << "Account type does not have interest" << std::endl;
             }
             else {
-                std::cout << save->computeInterest(stof(parameters[2]));
+                std::cout << save->computeInterest(stof(parameters[2])) << std::endl;
             }
         }
         else if (command.compare("search") == 0)

@@ -1,5 +1,8 @@
 #include "Current.h"
 
+#include <cmath>
+#include <math.h>
+
 // generates current account and adds all the information as well as creating a new transaction
 Current::Current(float openingAmount) {
     this->balance = openingAmount;
@@ -10,6 +13,7 @@ Current::Current(float openingAmount) {
 
 // adds funds to the account and creates a new transaction
 void Current::deposit(double amount, std::string message) {
+    amount = fabs(amount);
     this->balance += amount;
     this->history.push_back(new Transaction(message, amount));
     std::cout << this->toString();
@@ -17,8 +21,9 @@ void Current::deposit(double amount, std::string message) {
 
 // removes funds from account and checks if the funds go too low
 void Current::withdraw(double amount, std::string message) {
+    amount = fabs(amount);
     if(this->balance - amount < -overdraftAmount) {
-        throw BalanceTooLow();
+        throw BalanceTooLow(balance + 500);
     }
     this->balance -= amount;
     this->history.push_back(new Transaction(message, amount));

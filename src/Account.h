@@ -6,18 +6,23 @@
 #include "Transaction.h"
 
 // customized exceptions
-// trying to create a 2nd of an account that can only have 1
-class TooManyOfType : public std::exception{};
 // trying to withdraw money from an account without enough money in it
-class BalanceTooLow : public std::exception{};
+class BalanceTooLow : public std::exception {
+public:
+    float maxWithdraw = 0.0f;
+
+    explicit BalanceTooLow(const float balance) {
+        this->maxWithdraw = balance;
+    }
+};
+
 // trying to open an account with too little money in it
-class OpenBalanceTooLow : public std::exception{};
-// trying to use a minus value
-class MinusValue : public std::exception{};
+class OpenBalanceTooLow : public std::exception {};
+
 
 class Account {
 public:
-    std::pmr::vector<Transaction*> history;
+    std::vector<Transaction*> history;
     float balance = 0;
     std::string accountName;
     virtual void deposit(double amount, std::string message) = 0;

@@ -12,7 +12,7 @@ Savings::Savings(float openingAmount, bool isa) {
         case 1:
             this-> accountName = "ISA account";
             if(openingAmount < 1000) {
-                throw BalanceTooLow();
+                throw OpenBalanceTooLow();
             }
             std::cout << "ISA created!" << std::endl;
             break;
@@ -23,6 +23,7 @@ Savings::Savings(float openingAmount, bool isa) {
 
 // adds funds to the account and creates a new transaction
 void Savings::deposit(double amount, std::string message) {
+    amount = fabs(amount);
     this->balance += amount;
     this->history.push_back(new Transaction(message, amount));
     std::cout << this->toString();
@@ -30,8 +31,9 @@ void Savings::deposit(double amount, std::string message) {
 
 // removes funds from account and checks if the funds go too low
 void Savings::withdraw(double amount, std::string message) {
+    amount = fabs(amount);
     if(balance - amount < 0) {
-        throw BalanceTooLow();
+        throw BalanceTooLow(balance);
     }
     balance -= amount;
     this->history.push_back(new Transaction(message, amount));
