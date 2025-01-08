@@ -23,12 +23,12 @@ int main()
     std::vector <std::string> parameters;
     std::string userCommand;
     std::pmr::vector<Account*> accounts;
+    Account* stored;
 
     std::cout << "~~~ Welcome to LincBank! ~~~" << std::endl;
 
     while (userCommand != "exit")
     {
-        Account* stored;
         parameters.clear(); // clear ready for next command
         std::cout << std::endl << ">>>";
 
@@ -56,6 +56,7 @@ int main()
             std::cout << "deposit [index] sum: deposit funds into most recently viewed account or index of account" << std::endl;
             std::cout << "transfer src dest sum: transfer funds between accounts" << std::endl;
             std::cout << "project [index] years: project balance forward in time of most recently viewed account or index of account" << std::endl;
+            std::cout << "search [index] value: search for transaction by amount of most recently viewed account or index of account" << std::endl;
             std::cout << "exit: close this application" << std::endl;
             std::cout << "options: view these options again" << std::endl;
         }
@@ -100,8 +101,8 @@ int main()
         else if (command.compare("view") == 0)
         {
             if(parameters.size() > 1) {
-                std::cout << accounts[stof(parameters[1]) - 1]->toString();
-                stored = accounts[stof(parameters[1]) - 1];
+                std::cout << accounts[stoi(parameters[1]) - 1]->toString();
+                stored = accounts[stoi(parameters[1]) - 1];
             }
             else{
                 for(Account* a : accounts) {
@@ -113,8 +114,8 @@ int main()
         {
             try {
                 if(parameters.size() > 2) {
-                    accounts[stof(parameters[1]) - 1]->withdraw(stof(parameters[2]), "withdraw");
-                    stored = accounts[stof(parameters[1]) - 1];
+                    accounts[stoi(parameters[1]) - 1]->withdraw(stof(parameters[2]), "withdraw");
+                    stored = accounts[stoi(parameters[1]) - 1];
                 }
                 else {
                     stored->withdraw(stof(parameters[1]), "withdraw");
@@ -127,8 +128,8 @@ int main()
         else if (command.compare("deposit") == 0)
         {
             if(parameters.size() > 2) {
-                accounts[stof(parameters[1]) - 1]->deposit(stof(parameters[2]), "deposit");
-                stored = accounts[stof(parameters[1]) - 1];
+                accounts[stoi(parameters[1]) - 1]->deposit(stof(parameters[2]), "deposit");
+                stored = accounts[stoi(parameters[1]) - 1];
             }
             else {
                 stored->deposit(stof(parameters[1]), "deposit");
@@ -141,8 +142,8 @@ int main()
             ssTo << "transfer to account " << parameters[2];
             ssFrom << "transfer from account " << parameters[1];
             try {
-                accounts[stof(parameters[1]) - 1]->withdraw(stof(parameters[3]), ssTo.str());
-                accounts[stof(parameters[2]) - 1]->deposit(stof(parameters[3]), ssFrom.str());
+                accounts[stoi(parameters[1]) - 1]->withdraw(stof(parameters[3]), ssTo.str());
+                accounts[stoi(parameters[2]) - 1]->deposit(stof(parameters[3]), ssFrom.str());
             }
             catch (BalanceTooLow) {
                 std::cout << "not enough money in account";
@@ -154,7 +155,7 @@ int main()
         {
             Savings* save;
             if(parameters.size() == 3) {
-                save = dynamic_cast<Savings*>(accounts[stof(parameters[1]) - 1]);
+                save = dynamic_cast<Savings*>(accounts[stoi(parameters[1]) - 1]);
             }
             else {
                 save = dynamic_cast<Savings*>(stored);
@@ -169,7 +170,12 @@ int main()
         }
         else if (command.compare("search") == 0)
         {
-            accounts[stof(parameters[1]) - 1]->search(stof(parameters[2]));
+            if (parameters.size() == 3) {
+                accounts[stoi(parameters[1]) - 1]->search(stof(parameters[2]));
+            }
+            else {
+                stored->search(stof(parameters[1]));
+            }
         }
     }
 
